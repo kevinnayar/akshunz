@@ -6,30 +6,30 @@ export default class Logger {
   namespace: string
 
   constructor(namespace?: string) {
-    this.namespace = namespace ? chalk.magenta(namespace) : '';
+    this.namespace = namespace ? chalk.magenta(namespace) : ''
   }
 
   private label = (type: 'log' | 'warn' | 'error' | 'req') => {
     let color: typeof Color
 
     switch (type) {
-      case 'log': {
-        color = 'bgGreen'
-        break
-      }
-      case 'warn': {
-        color = 'bgYellow'
-        break
-      }
-      case 'error': {
-        color = 'bgRed'
-        break
-      }
-      case 'req': {
-        color = 'bgCyan'
-        break
-      }
-      default: throw new Error(`Unrecognized label type: ${type}`)
+    case 'log': {
+      color = 'bgGreen'
+      break
+    }
+    case 'warn': {
+      color = 'bgYellow'
+      break
+    }
+    case 'error': {
+      color = 'bgRed'
+      break
+    }
+    case 'req': {
+      color = 'bgCyan'
+      break
+    }
+    default: throw new Error(`Unrecognized label type: ${type}`)
     }
 
     return [
@@ -53,7 +53,9 @@ export default class Logger {
 
   request(req: Request) {
     const url = req.url.split('?')[0]
-    const { method, body, params, query } = req
+    const {
+      method, body, params, query,
+    } = req
     const message = {
       url,
       method,

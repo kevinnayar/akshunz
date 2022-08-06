@@ -1,6 +1,7 @@
 import * as express from 'express'
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import puppeteer, { Browser } from 'puppeteer'
+
 import Cache from './utils/cache'
 import Logger from './utils/logger'
 
@@ -73,6 +74,3 @@ main().catch((e) => {
   console.log(e)
   process.exit(1)
 })
-
-
-

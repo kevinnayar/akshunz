@@ -1,5 +1,6 @@
 export default class Cache<T> {
   limit: number
+
   store: Map<string, T>
 
   constructor(limit?: number) {
