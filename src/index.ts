@@ -16,24 +16,11 @@ export function capitalize(text: string) {
   return newWords.join(' ')
 }
 
-export function replaceInText(textIn: string, replaceTuples: Array<[string, string]>): string {
-  const textOut = replaceTuples.reduce((text, [key, value]) => {
-    /* eslint-disable no-param-reassign */
-    text = text.replace(key, value)
-    return text
-  }, textIn)
-  return textOut
-}
-
 async function main() {
   const logger = new Logger('ApiServer')
-  const cache = new Cache<any>(2)
+  const cache = new Cache<string[]>(1)
 
   const app = express()
-  const apiUrl = 'http://localhost:8080'
-  const apiPort = apiUrl.split(':')[2]
-  logger.info({ apiPort })
-
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use(express.static('public'))
@@ -45,39 +32,52 @@ async function main() {
     next()
   }
 
-  async function getZipsToStates(req: Request, res: Response) {
+  async function getNationalParks(req: Request, res: Response) {
+    const cacheKey = req.route.path
+    const { timerEnd } = logger.timer(cacheKey)
+
+    if (cache.has(cacheKey)) {
+      timerEnd('via cache')
+      const data = cache.get(cacheKey)
+      res.status(200).send(data)
+      return
+    }
+
     const page = await browser.newPage()
-    const url = 'https://en.wikipedia.org/wiki/List_of_ZIP_Code_prefixes'
+    const url = 'https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States'
 
     await page.goto(url)
     await page.waitForSelector('#mw-content-text table')
 
     const data = await page.evaluate(() => {
-      const elems = Array.from(document.querySelectorAll('#mw-content-text table tr td > b'))
-      const zips = []
+      const nameElems = Array.from(
+        document.querySelectorAll('#mw-content-text table.wikitable tbody tr th > a'),
+      )
 
-      for (const elem of elems) {
-        const text = elem.textContent
-        if (text) {
-          const [zip, state] = text.split(' ')
-          if (state) {
-            const abbr = state.slice(0, 2)
-            zips.push([zip, abbr])
-          }
-        }
+      const names = []
+
+      for (const elem of nameElems) {
+        const name = elem.textContent
+        if (name) names.push(name)
       }
-      return zips
+
+      return names
     })
 
-    cache.set('zips-to-states', data)
+    cache.set(cacheKey, data)
 
-    res.status(200).send({ data })
+    timerEnd('via puppeteer')
+
+    res.status(200).send(data)
   }
 
-  app.get('/api/v1/zips-to-states', requestLogger, getZipsToStates)
+  app.get('/api/v1/national-parks', requestLogger, getNationalParks)
 
-  app.listen(apiUrl, () => {
-    logger.info(`api server running at ${apiUrl}`)
+  const apiUrl = 'http://127.0.0.1'
+  const apiPort = 3000
+
+  app.listen(apiPort, () => {
+    logger.log(`api server running at ${apiUrl}:${apiPort}`)
   })
 }
 
@@ -86,6 +86,5 @@ main().catch((e) => {
   process.exit(1)
 })
 
-main()
 
 

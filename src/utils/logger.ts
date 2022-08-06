@@ -1,18 +1,19 @@
-// import chalk, { Color } from 'chalk'
+import * as chalk from 'chalk'
+import { Color } from 'chalk'
 import { Request } from 'express'
 
 export default class Logger {
   namespace: string
 
   constructor(namespace?: string) {
-    this.namespace = namespace || ''
+    this.namespace = namespace ? chalk.magenta(namespace) : '';
   }
 
-  private label = (type: 'info' | 'warn' | 'error' | 'req') => {
-    let color: any
+  private label = (type: 'log' | 'warn' | 'error' | 'req') => {
+    let color: typeof Color
 
     switch (type) {
-      case 'info': {
+      case 'log': {
         color = 'bgGreen'
         break
       }
@@ -31,15 +32,14 @@ export default class Logger {
       default: throw new Error(`Unrecognized label type: ${type}`)
     }
 
-    // return [
-    //   chalk.inverse(` ${Date.now()} `),
-    //   chalk[color].rgb(0, 0, 0).bold(` ${type} `),
-    // ]
-    return [`%c${Date.now()} ${type} `, `color:${color};`]
+    return [
+      chalk.inverse(` ${Date.now()} `),
+      chalk[color].rgb(0, 0, 0).bold(` ${type} `),
+    ]
   }
 
-  info(...messages: any) {
-    console.log(...this.label('info'), this.namespace, ...messages)
+  log(...messages: any) {
+    console.log(...this.label('log'), this.namespace, ...messages)
   }
 
   warn(...messages: any) {
@@ -71,7 +71,7 @@ export default class Logger {
     const timerEnd = (extra?: string) => {
       const diff = Date.now() - beganAt
       const messages = extra ? [`${operation} -> ${extra}`, diff] : [operation, diff]
-      console.log(...this.label('info'), this.namespace, ...messages)
+      console.log(...this.label('log'), this.namespace, ...messages)
     }
 
     return {
