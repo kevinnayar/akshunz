@@ -1,4 +1,4 @@
-import { capitalize } from 'index'
+import { capitalize } from './strings'
 
 describe('basic tests', () => {
   it('capitalized', () => {

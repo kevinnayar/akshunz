@@ -4,18 +4,6 @@ import puppeteer, { Browser } from 'puppeteer'
 import Cache from './utils/cache'
 import Logger from './utils/logger'
 
-export function capitalize(text: string) {
-  const newWords: string[] = []
-  const words = text.split(' ')
-
-  for (const word of words) {
-    const newWord = `${word[0].toUpperCase()}${word.substring(1)}`
-    newWords.push(newWord)
-  }
-
-  return newWords.join(' ')
-}
-
 async function main() {
   const logger = new Logger('ApiServer')
   const cache = new Cache<string[]>(1)
