@@ -12,6 +12,7 @@ export function capitalize(text: string) {
 
 export function replaceInText(textIn: string, replaceTuples: Array<[string, string]>): string {
   const textOut = replaceTuples.reduce((text, [key, value]) => {
+    /* eslint-disable no-param-reassign */
     text = text.replace(key, value)
     return text
   }, textIn)
@@ -30,5 +31,3 @@ function main() {
 }
 
 main()
-
-  
