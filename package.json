@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles --verbose false",
+    "check:lint": "eslint \"{src}/**/*.ts\"",
     "check:lint:fix": "eslint \"{src}/**/*.ts\" --fix"
   },
   "repository": {
