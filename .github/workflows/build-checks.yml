@@ -12,5 +12,9 @@ jobs:
         with:
           node-version: "16"
           cache: "npm"
+      - name: Install Deps
+        run: npm ci
+      - name: Run Tests
+        run: npm run test
       - name: Run Lint Check
         run: npm run check:lint
