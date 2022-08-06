@@ -10,12 +10,24 @@ export function capitalize(text: string) {
   return newWords.join(' ')
 }
 
+export function replaceInText(textIn: string, replaceTuples: Array<[string, string]>): string {
+  const textOut = replaceTuples.reduce((text, [key, value]) => {
+    /* eslint-disable no-param-reassign */
+    text = text.replace(key, value)
+    return text
+  }, textIn)
+  return textOut
+}
+
 function main() {
-  const text = 'this is the main function'
-  const capitalized = capitalize(text)
+  const textIn = 'this is the secondary method'
+  const replaceTuples: Array<[string, string]> = [
+    ['secondary', 'primary'],
+    ['method', 'function'],
+  ]
+  const textOut = replaceInText(textIn, replaceTuples)
+  const capitalized = capitalize(textOut)
   return capitalized
 }
 
 main()
-
-  
