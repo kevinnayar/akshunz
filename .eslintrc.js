@@ -57,12 +57,21 @@ module.exports = {
     // Disallow the use of eval()-like methods.
     '@typescript-eslint/no-implied-eval': 'off',
 
+    '@typescript-eslint/no-misused-promises': [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
+    
     // Overrides eslint's no-loop-func for typescript
     "@typescript-eslint/no-loop-func": ["error"],
 
     // Disallows using a type assertion that does not change the type of an expression.
     '@typescript-eslint/no-unnecessary-type-assertion': 'off',
 
+    '@typescript-eslint/no-unsafe-argument': 'off',
+    
     // Disallows assigning any to a variable, and assigning any[] to an array destructuring.
     '@typescript-eslint/no-unsafe-assignment': 'off',
 

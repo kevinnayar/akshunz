@@ -1,33 +1,77 @@
-export function capitalize(text: string) {
-  const newWords: string[] = []
-  const words = text.split(' ')
+import * as express from 'express'
+import { NextFunction, Request, Response } from 'express'
+import puppeteer, { Browser } from 'puppeteer'
 
-  for (const word of words) {
-    const newWord = `${word[0].toUpperCase()}${word.substring(1)}`
-    newWords.push(newWord)
+import Cache from './utils/cache'
+import Logger from './utils/logger'
+
+async function main() {
+  const logger = new Logger('ApiServer')
+  const cache = new Cache<string[]>(1)
+
+  const app = express()
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: false }))
+  app.use(express.static('public'))
+
+  const browser: Browser = await puppeteer.launch()
+
+  async function requestLogger(req: Request, _res: Response, next: NextFunction) {
+    logger.request(req)
+    next()
   }
 
-  return newWords.join(' ')
+  async function getNationalParks(req: Request, res: Response) {
+    const cacheKey = req.route.path
+    const timer = logger.timer(cacheKey)
+
+    if (cache.has(cacheKey)) {
+      timer.end('via cache')
+      const data = cache.get(cacheKey)
+      res.status(200).send(data)
+      return
+    }
+
+    const page = await browser.newPage()
+    const url = 'https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States'
+
+    await page.goto(url)
+    await page.waitForSelector('#mw-content-text table')
+
+    const data = await page.evaluate(() => {
+      const nameElems = Array.from(
+        document.querySelectorAll('#mw-content-text table.wikitable tbody tr th > a'),
+      )
+
+      const names = []
+
+      for (const elem of nameElems) {
+        const name = elem.textContent
+        if (name) names.push(name)
+      }
+
+      return names
+    })
+
+    cache.set(cacheKey, data)
+
+    timer.end('via puppeteer')
+
+    res.status(200).send(data)
+  }
+
+  app.get('/api/v1/national-parks', requestLogger, getNationalParks)
+
+  const apiUrl = 'http://127.0.0.1'
+  const apiPort = 3000
+
+  app.listen(apiPort, () => {
+    logger.log(`running at ${apiUrl}:${apiPort}`)
+  })
 }
 
-export function replaceInText(textIn: string, replaceTuples: Array<[string, string]>): string {
-  const textOut = replaceTuples.reduce((text, [key, value]) => {
-    /* eslint-disable no-param-reassign */
-    text = text.replace(key, value)
-    return text
-  }, textIn)
-  return textOut
-}
-
-function main() {
-  const textIn = 'this is the secondary method'
-  const replaceTuples: Array<[string, string]> = [
-    ['secondary', 'primary'],
-    ['method', 'function'],
-  ]
-  const textOut = replaceInText(textIn, replaceTuples)
-  const capitalized = capitalize(textOut)
-  return capitalized
-}
-
-main()
+main().catch((e) => {
+  /* eslint-disable no-console */
+  console.error(e)
+  process.exit(1)
+})
