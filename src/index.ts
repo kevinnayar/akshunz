@@ -23,10 +23,10 @@ async function main() {
 
   async function getNationalParks(req: Request, res: Response) {
     const cacheKey = req.route.path
-    const { timerEnd } = logger.timer(cacheKey)
+    const timer = logger.timer(cacheKey)
 
     if (cache.has(cacheKey)) {
-      timerEnd('via cache')
+      timer.end('via cache')
       const data = cache.get(cacheKey)
       res.status(200).send(data)
       return
@@ -55,7 +55,7 @@ async function main() {
 
     cache.set(cacheKey, data)
 
-    timerEnd('via puppeteer')
+    timer.end('via puppeteer')
 
     res.status(200).send(data)
   }
@@ -66,11 +66,12 @@ async function main() {
   const apiPort = 3000
 
   app.listen(apiPort, () => {
-    logger.log(`api server running at ${apiUrl}:${apiPort}`)
+    logger.log(`running at ${apiUrl}:${apiPort}`)
   })
 }
 
 main().catch((e) => {
-  console.log(e)
+  /* eslint-disable no-console */
+  console.error(e)
   process.exit(1)
 })

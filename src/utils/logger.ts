@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as chalk from 'chalk'
 import { Color } from 'chalk'
 import { Request } from 'express'
@@ -5,11 +6,11 @@ import { Request } from 'express'
 export default class Logger {
   namespace: string
 
-  constructor(namespace?: string) {
-    this.namespace = namespace ? chalk.magenta(namespace) : ''
+  constructor(namespace: string) {
+    this.namespace = chalk.magenta(namespace)
   }
 
-  private label = (type: 'log' | 'warn' | 'error' | 'req') => {
+  private print = (type: 'log' | 'warn' | 'error' | 'req', messages: any[]) => {
     let color: typeof Color
 
     switch (type) {
@@ -32,23 +33,27 @@ export default class Logger {
     default: throw new Error(`Unrecognized label type: ${type}`)
     }
 
-    return [
+    const fn = type === 'error' ? console.error : console.log
+
+    fn(
       chalk.inverse(` ${Date.now()} `),
       chalk[color].rgb(0, 0, 0).bold(` ${type} `),
-    ]
+      this.namespace,
+      ...messages,
+    )
   }
 
   log(...messages: any) {
-    console.log(...this.label('log'), this.namespace, ...messages)
+    this.print('log', messages)
   }
 
   warn(...messages: any) {
-    console.log(...this.label('warn'), this.namespace, ...messages)
+    this.print('warn', messages)
   }
 
   error(e: Error | string) {
-    const err = e instanceof Error ? { name: e.name, message: e.message, stack: e.stack } : e
-    console.error(...this.label('error'), this.namespace, err)
+    const message = e instanceof Error ? { name: e.name, message: e.message, stack: e.stack } : e
+    this.print('error', [message])
   }
 
   request(req: Request) {
@@ -65,20 +70,20 @@ export default class Logger {
       utcTimestamp: Date.now(),
     }
 
-    console.log(...this.label('req'), this.namespace, message)
+    this.print('req', [message])
   }
 
   timer(operation: string) {
-    const beganAt = Date.now()
-    const timerEnd = (extra?: string) => {
-      const diff = Date.now() - beganAt
+    const begin = Date.now()
+
+    const end = (extra?: string) => {
+      const diff = Date.now() - begin
       const messages = extra ? [`${operation} -> ${extra}`, diff] : [operation, diff]
-      console.log(...this.label('log'), this.namespace, ...messages)
+      this.print('log', messages)
     }
 
     return {
-      beganAt,
-      timerEnd,
+      end,
     }
   }
 }

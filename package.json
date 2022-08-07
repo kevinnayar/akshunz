@@ -6,8 +6,8 @@
   "scripts": {
     "start": "nodemon --watch ./src -e ts --exec npx ts-node ./src/index.ts",
     "test": "jest --detectOpenHandles --verbose false",
-    "check:lint": "eslint \"src/**/*.ts\"",
-    "check:lint:fix": "eslint \"src/**/*.ts\" --fix"
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix"
   },
   "repository": {
     "type": "git",
